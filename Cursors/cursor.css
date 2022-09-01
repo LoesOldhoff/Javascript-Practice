@@ -1,0 +1,66 @@
+* {    
+    margin: 0;
+    padding: 0;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+body {
+    cursor: url('flower\ or\ fish.cur'), auto;       
+    height: 100vh; 
+    background: lightcyan;   
+}
+
+h1 {
+    text-align: center;
+    margin: 30px;
+}
+
+.red {
+    position: absolute;
+    left: 400px;
+    top: 200px;
+    width: 54px;
+    box-sizing: content-box;
+    border-width: 50px 18px 0;
+    border-style: solid;
+    border-color: green transparent;      
+}
+
+.follower {
+    background-color: lightblue;
+    position: absolute;  
+    border-radius: 50%;
+    border: 2px solid lightseagreen;
+    transform: translate(-50%,-50%);
+    animation: cursorAnim .7s infinite alternate;
+}
+
+#follower1{
+    width: 30px;
+    height: 30px;    
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+}
+
+#follower2{
+    width: 20px;
+    height: 20px;    
+    transition-duration: 300ms;
+    transition-timing-function: ease-out;
+}
+
+#follower3{
+    width: 10px;
+    height: 10px;    
+    transition-duration: 400ms;
+    transition-timing-function: ease-out;
+}
+
+@keyframes cursorAnim {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(.8);
+    }
+}
