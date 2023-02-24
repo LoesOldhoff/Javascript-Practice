@@ -19,6 +19,7 @@ function animate(){
     requestAnimationFrame(animate);
     angle += 0.3;
     hue++;
+    frame++;
 }
 animate();
 
