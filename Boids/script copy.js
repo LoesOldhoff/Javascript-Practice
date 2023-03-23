@@ -3,12 +3,15 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 let boids = [];
+let centerx = canvas.width/2;
+let centery = canvas.height/2; 
 
 class Boid {
-    constructor(x, y, radius, length, velocity, turnspeed, v1x, v1y, v2x, v2y, v3x, v3y, vx, vy){
+    constructor(x, y, radius, angle, length, velocity, turnspeed, v1x, v1y, v2x, v2y, v3x, v3y, vtx, vty){
         this.x = x;
         this.y = y;
         this.radius = radius;
+        this.angle = angle;
         this.length = length;
         this.velocity = velocity;
         this.turnspeed = turnspeed;
@@ -18,11 +21,22 @@ class Boid {
         this.v2y = v2y;
         this.v3x = v3x;
         this.v3y = v3y;
-        this.vx = vx;
-        this.vy = vy;
+        this.vtx = vtx;
+        this.vty = vty;
+
     }
 
-    draw(){        
+    draw(){
+        
+        //draw tail
+        ctx.beginPath();
+        let tailx = this.x - this.length*Math.sin(this.vtx)
+        let taily = this.y - this.length*Math.cos(this.vty)
+        ctx.arc(tailx, taily, this.radius*0.5, 0, Math.PI * 2, true)
+        ctx.fillStyle = 'blue';
+        ctx.fill();
+        ctx.closePath();
+
         //draw v1
         ctx.beginPath();
         ctx.lineWidth = 2;
@@ -46,7 +60,7 @@ class Boid {
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'magenta';
         ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x + this.vx, this.y + this.vy);  
+        ctx.lineTo(this.x + this.vtx, this.y + this.vty);  
         ctx.stroke();
         ctx.closePath();
 
@@ -68,26 +82,17 @@ class Boid {
     }
 
     move(){
+        //Turn away from the edges of the canvas
+        //if(this.x < 0){
+        //    this.angle += this.turnspeed;}        
+        //if (this.x > canvas.width){
+        //    this.angle -= this.turnspeed;}
+        //if (this.y < 0){
+        //    this.angle += this.turnspeed;} 
+        //if (this.y > canvas.height){
+        //    this.angle -= this.turnspeed;}
+
         //Calculate v1 (cohesion)
-        let centerx = 0;
-        let centery = 0;
-        let neighboids = 0;
-        for (let i = 0; i < boids.length; i++){
-            let a = boids[i].x - this.x
-            let b = boids[i].y - this.y
-            let distance = Math.sqrt(a*a + b*b)
-            if (distance < 400 && distance != 0){
-                centerx += boids[i].x;
-                centery += boids[i].y;
-                neighboids += 1;
-            }     
-            if (distance = 0){
-                this.vy1 += Math.random()*10;
-                this.vy2 += Math.random()*10;
-            }       
-        }
-        centerx = centerx/neighboids;
-        centery = centery/neighboids;
         this.v1x = (centerx - this.x);
         this.v1y = (centery - this.y);
 
@@ -105,6 +110,8 @@ class Boid {
         }
 
         //Calculate v3 (alignment)
+        this.v3x = 0;
+        this.v3y = 0;
         let avvx = 0;
         let avvy = 0;
         let closeboids = 0;
@@ -112,9 +119,9 @@ class Boid {
             let a = boids[i].x - this.x;
             let b = boids[i].y - this.y;
             let distance = Math.sqrt(a*a + b*b)
-            if (distance < 400 && distance != 0){
-                avvx += boids[i].x - (boids[i].x + boids[i].vx);
-                avvy += boids[i].y - (boids[i].y + boids[i].vy);
+            if (distance < 100 && distance != 0){
+                avvx += boids[i].x - (boids[i].x + boids[i].vtx);
+                avvy += boids[i].y - (boids[i].y + boids[i].vty);
                 closeboids += 1;
             }
         }
@@ -123,70 +130,69 @@ class Boid {
         this.v3y = avvy/closeboids;
         }
 
-        //let newvx = ((this.v1x*1) + (this.v2x*1) + (this.v3x*1))/3;
-        //let newvy = ((this.v1y*1) + (this.v2y*1) + (this.v3y*1))/3;   
-        //this.vx += newvx*0.001;  
-        //this.vy += newvy*0.001;
-
-        this.vx = ((this.v1x*1) + (this.v2x*1) + (this.v3x*1))/3;
-        this.vy = ((this.v1y*1) + (this.v2y*1) + (this.v3y*1))/3; 
-
-        //Turn away from the edges of the canvas
-        if(this.x < 100){
-            this.vx += this.turnspeed;}        
-        if (this.x > (canvas.width-100)){
-            this.vx -= this.turnspeed;}
-        if (this.y < 100){
-            this.vy += this.turnspeed;} 
-        if (this.y > (canvas.height-100)){
-            this.vy -= this.turnspeed;}
+        this.vtx = (this.v1x + this.v2x + this.v3x)/3; 
+        this.vty = (this.v1y + this.v2y + this.v3y)/3;    
 
         
-        //Speed
-        let a = this.x - (this.x + this.vx);
-        let b = this.y - (this.y + this.vy);
-        let speed = Math.sqrt(a*a + b*b);
-        if (speed < this.minspeed && speed != 0){
-            this.vx = (this.vx/speed)*this.minspeed;
-            this.vy = (this.vy/speed)*this.minspeed;
-        }
-        if (speed > this.maxspeed && speed != 0){
-            this.vx = (this.vx/speed)*this.maxspeed;
-            this.vy = (this.vy/speed)*this.maxspeed;
-        }    
-
         //Fly
-        this.x = this.x + this.vx;
-        this.y = this.y + this.vy;
+        this.x = this.x + (this.vtx/100);
+        this.y = this.y + (this.vty/100);
         }
     }
 
+
+function drawcenter(){
+    let x = 0;
+    let y = 0;
+    for (let i = 0; i < boids.length; i++){
+        x += boids[i].x;
+        y += boids[i].y;
+    }
+    x = x/boids.length;
+    y = y/boids.length;
+    if (x > canvas.width){
+        x = canvas.width
+    }
+    if (y > canvas.height){
+        y = canvas.height
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, Math.PI * 2, true);
+    ctx.fillStyle = 'gold';
+    ctx.fill();
+    ctx.closePath();
+    centerx = x;
+    centery = y;
+}
+
+
 function init(){
     boids = [];
-    let numberOfBoids = 50;
+    let numberOfBoids = 10;
     let guard = 100;
     while(boids.length < numberOfBoids && boids.length < guard){
-        let startx = Math.random() * (canvas.width - 100);
-        let starty = Math.random() * (canvas.height - 100);
+        let startx = Math.random() * canvas.width;
+        let starty = Math.random() * canvas.height;
+        let startangle = Math.random();
         let boid = {
             x: startx,
             y: starty,
             length: 20,
-            radius: 10,          
-            minspeed: 0.1,
-            maxspeed: 5,
-            turnspeed: 10,
+            radius: 10,
+            angle: startangle,          
+            velocity: 1,
+            turnspeed: 0.1,
             v1x: 0,
             v1y: 0, 
             v2x: startx,
             v2y: starty,
             v3x: startx,
             v3y: starty,
-            vx: startx,
-            vy: starty,
+            vtx: startx,
+            vty: starty
         };
-        boids.push(new Boid(boid.x, boid.y, boid.radius, boid.angle, boid.length, boid.minspeed, boid.maxspeed, 
-            boid.turnspeed, boid.v1x, boid.v1y, boid.v2x, boid.v2y, boid.v3x, boid.v3y, boid.vx, boid.vy,));
+        boids.push(new Boid(boid.x, boid.y, boid.radius, boid.angle, boid.length, boid.velocity, 
+            boid.turnspeed, boid.v1x, boid.v1y, boid.v2x, boid.v2y, boid.v3x, boid.v3y, boid.vtx, boid.vty));
     }
 }
 
@@ -197,6 +203,7 @@ function animate(){
     for (let i = 0; i < boids.length; i++) {
         boids[i].draw();
         boids[i].move();
+        drawcenter();
     }
 }
 
