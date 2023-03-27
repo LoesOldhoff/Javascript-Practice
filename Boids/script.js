@@ -5,7 +5,7 @@ canvas.height = window.innerHeight;
 let boids = [];
 
 class Boid {
-    constructor(x, y, radius, length, velocity, turnspeed, v1x, v1y, v2x, v2y, v3x, v3y, vx, vy){
+    constructor(x, y, radius, length, velocity, turnspeed, v1x, v1y, v2x, v2y, v3x, v3y, vx, vy, xvelocity, yvelocity){
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -20,13 +20,15 @@ class Boid {
         this.v3y = v3y;
         this.vx = vx;
         this.vy = vy;
+        this.xvelocity = xvelocity;
+        this.yvelocity = yvelocity
     }
 
     draw(){        
         //draw v1
         ctx.beginPath();
         ctx.lineWidth = 2;
-        ctx.strokeStyle = '#062104';
+        ctx.strokeStyle = 'blue';
         ctx.moveTo(this.x, this.y);
         ctx.lineTo(this.x + this.v1x, this.y + this.v1y);  
         ctx.stroke();
@@ -35,7 +37,7 @@ class Boid {
         //draw v2
         ctx.beginPath();
         ctx.lineWidth = 2;
-        ctx.strokeStyle = '#21040f';
+        ctx.strokeStyle = 'cyan';
         ctx.moveTo(this.x, this.y);
         ctx.lineTo(this.x + this.v2x, this.y + this.v2y);  
         ctx.stroke();
@@ -76,7 +78,7 @@ class Boid {
             let a = boids[i].x - this.x
             let b = boids[i].y - this.y
             let distance = Math.sqrt(a*a + b*b)
-            if (distance < 400 && distance != 0){
+            if (distance < 200 && distance != 0){
                 centerx += boids[i].x;
                 centery += boids[i].y;
                 neighboids += 1;
@@ -98,7 +100,7 @@ class Boid {
             let a = boids[i].x - this.x
             let b = boids[i].y - this.y
             let distance = Math.sqrt(a*a + b*b)
-            if (distance < 100 && distance != 0){
+            if (distance < 80 && distance != 0){
                 this.v2x -= boids[i].x - this.x
                 this.v2y -= boids[i].y - this.y
             }          
@@ -112,7 +114,7 @@ class Boid {
             let a = boids[i].x - this.x;
             let b = boids[i].y - this.y;
             let distance = Math.sqrt(a*a + b*b)
-            if (distance < 400 && distance != 0){
+            if (distance < 200 && distance != 0){
                 avvx += boids[i].x - (boids[i].x + boids[i].vx);
                 avvy += boids[i].y - (boids[i].y + boids[i].vy);
                 closeboids += 1;
@@ -123,41 +125,43 @@ class Boid {
         this.v3y = avvy/closeboids;
         }
 
-        //let newvx = ((this.v1x*1) + (this.v2x*1) + (this.v3x*1))/3;
-        //let newvy = ((this.v1y*1) + (this.v2y*1) + (this.v3y*1))/3;   
-        //this.vx += newvx*0.001;  
-        //this.vy += newvy*0.001;
+        this.vx = ((this.v1x*0.9) + (this.v2x*0.8) + (this.v3x*1))/3;
+        this.vy = ((this.v1y*0.9) + (this.v2y*0.8) + (this.v3y*1))/3; 
 
-        this.vx = ((this.v1x*1) + (this.v2x*1) + (this.v3x*1))/3;
-        this.vy = ((this.v1y*1) + (this.v2y*1) + (this.v3y*1))/3; 
 
-        //Turn away from the edges of the canvas
-        if(this.x < 100){
-            this.vx += this.turnspeed;}        
-        if (this.x > (canvas.width-100)){
-            this.vx -= this.turnspeed;}
-        if (this.y < 100){
-            this.vy += this.turnspeed;} 
-        if (this.y > (canvas.height-100)){
-            this.vy -= this.turnspeed;}
+        this.xvelocity = this.xvelocity + (this.vx*1);
+        this.yvelocity = this.yvelocity + (this.vy*1);
 
         
         //Speed
-        let a = this.x - (this.x + this.vx);
-        let b = this.y - (this.y + this.vy);
-        let speed = Math.sqrt(a*a + b*b);
-        if (speed < this.minspeed && speed != 0){
-            this.vx = (this.vx/speed)*this.minspeed;
-            this.vy = (this.vy/speed)*this.minspeed;
+        if (Math.abs(this.xvelocity) > this.maxspeed){
+            this.xvelocity = (this.xvelocity/Math.abs(this.xvelocity))*this.maxspeed
         }
-        if (speed > this.maxspeed && speed != 0){
-            this.vx = (this.vx/speed)*this.maxspeed;
-            this.vy = (this.vy/speed)*this.maxspeed;
-        }    
+        if (Math.abs(this.yvelocity) > this.maxspeed){
+            this.yvelocity = (this.yvelocity/Math.abs(this.yvelocity))*this.maxspeed
+        }
+        if (Math.abs(this.xvelocity) < this.minspeed){
+            this.xvelocity = (this.xvelocity/Math.abs(this.xvelocity))*this.minspeed
+        }
+        if (Math.abs(this.yvelocity) < this.minspeed){
+            this.yvelocity = (this.yvelocity/Math.abs(this.yvelocity))*this.minspeed
+        }
+
+        //Turn away from the edges of the canvas
+        if(this.x < 100){
+            this.xvelocity += this.turnspeed;
+            console.log('too fast')}        
+        if (this.x > (canvas.width-100)){
+            this.xvelocity -= this.turnspeed}
+        if (this.y < 100){
+            this.yvelocity += this.turnspeed} 
+        if (this.y > (canvas.height-100)){
+            this.yvelocity -= this.turnspeed}
+
 
         //Fly
-        this.x = this.x + this.vx;
-        this.y = this.y + this.vy;
+        this.x = this.x + (this.xvelocity*1);
+        this.y = this.y + (this.yvelocity*1);
         }
     }
 
@@ -172,21 +176,24 @@ function init(){
             x: startx,
             y: starty,
             length: 20,
-            radius: 10,          
-            minspeed: 0.1,
-            maxspeed: 5,
+            radius: 5,          
+            minspeed: 0.01,
+            maxspeed: 0.05,
             turnspeed: 10,
             v1x: 0,
             v1y: 0, 
-            v2x: startx,
-            v2y: starty,
-            v3x: startx,
-            v3y: starty,
-            vx: startx,
-            vy: starty,
+            v2x: 0,
+            v2y: 0,
+            v3x: 0,
+            v3y: 0,
+            vx: 0,
+            vy: 0,
+            xvelocity: 0,
+            yvelocity: 0
         };
         boids.push(new Boid(boid.x, boid.y, boid.radius, boid.angle, boid.length, boid.minspeed, boid.maxspeed, 
-            boid.turnspeed, boid.v1x, boid.v1y, boid.v2x, boid.v2y, boid.v3x, boid.v3y, boid.vx, boid.vy,));
+            boid.turnspeed, boid.v1x, boid.v1y, boid.v2x, boid.v2y, boid.v3x, boid.v3y, boid.vx, boid.vy, 
+            boid.xvelocity, boid.yvelocity));
     }
 }
 
