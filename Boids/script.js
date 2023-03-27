@@ -43,21 +43,21 @@ class Boid {
         ctx.stroke();
         ctx.closePath();
 
-        //draw True angle
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'magenta';
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x + this.vx, this.y + this.vy);  
-        ctx.stroke();
-        ctx.closePath();
-
         //draw v3
         ctx.beginPath();
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'yellow';
         ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x - this.v3x, this.y - this.v3y);  
+        ctx.lineTo(this.x + this.v3x, this.y + this.v3y);  
+        ctx.stroke();
+        ctx.closePath();
+
+        //draw True angle
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'magenta';
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + this.xvelocity, this.y + this.yvelocity);  
         ctx.stroke();
         ctx.closePath();
 
@@ -115,18 +115,20 @@ class Boid {
             let b = boids[i].y - this.y;
             let distance = Math.sqrt(a*a + b*b)
             if (distance < 200 && distance != 0){
-                avvx += boids[i].x - (boids[i].x + boids[i].vx);
-                avvy += boids[i].y - (boids[i].y + boids[i].vy);
+                console.log('close boid!');
+                avvx += boids[i].vy;
+                avvy += boids[i].vx;
                 closeboids += 1;
             }
         }
         if (closeboids != 0){
         this.v3x = avvx/closeboids;
+        console.log(this.v3x);
         this.v3y = avvy/closeboids;
         }
 
-        this.vx = ((this.v1x*0.9) + (this.v2x*0.8) + (this.v3x*1))/3;
-        this.vy = ((this.v1y*0.9) + (this.v2y*0.8) + (this.v3y*1))/3; 
+        this.vx = ((this.v1x*0.01) + (this.v2x*0.01) + (this.v3x*2))/3;
+        this.vy = ((this.v1y*0.01) + (this.v2y*0.01) + (this.v3y*2))/3; 
 
 
         this.xvelocity = this.xvelocity + (this.vx*1);
@@ -149,8 +151,7 @@ class Boid {
 
         //Turn away from the edges of the canvas
         if(this.x < 100){
-            this.xvelocity += this.turnspeed;
-            console.log('too fast')}        
+            this.xvelocity += this.turnspeed}        
         if (this.x > (canvas.width-100)){
             this.xvelocity -= this.turnspeed}
         if (this.y < 100){
@@ -177,9 +178,9 @@ function init(){
             y: starty,
             length: 20,
             radius: 5,          
-            minspeed: 0.01,
-            maxspeed: 0.05,
-            turnspeed: 10,
+            minspeed: 0.1,
+            maxspeed: 5,
+            turnspeed: 500,
             v1x: 0,
             v1y: 0, 
             v2x: 0,
