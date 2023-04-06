@@ -116,8 +116,8 @@ class Boid {
             let distance = Math.sqrt(a*a + b*b)
             if (distance < 200 && distance != 0){
                 console.log('close boid!');
-                avvx += boids[i].vy;
-                avvy += boids[i].vx;
+                avvx += boids[i].xvelocity;
+                avvy += boids[i].yvelocity;
                 closeboids += 1;
             }
         }
@@ -127,15 +127,16 @@ class Boid {
         this.v3y = avvy/closeboids;
         }
 
-        this.vx = ((this.v1x*0.01) + (this.v2x*0.01) + (this.v3x*2))/3;
-        this.vy = ((this.v1y*0.01) + (this.v2y*0.01) + (this.v3y*2))/3; 
+        //this.vx = ((this.v1x*0.01) + (this.v2x*0.01) + (this.v3x*2))/3;
+        //this.vy = ((this.v1y*0.01) + (this.v2y*0.01) + (this.v3y*2))/3; 
+        this.vx = ((this.v1x*1) + (this.v2x*1) + (this.v3x*1))/3;
+        this.vy = ((this.v1y*1) + (this.v2y*1) + (this.v3y*1))/3; 
 
 
-        this.xvelocity = this.xvelocity + (this.vx*1);
-        this.yvelocity = this.yvelocity + (this.vy*1);
+        this.xvelocity = this.xvelocity + (this.vx*0.01);
+        this.yvelocity = this.yvelocity + (this.vy*0.01);
 
-        
-        //Speed
+        /*//Speed
         if (Math.abs(this.xvelocity) > this.maxspeed){
             this.xvelocity = (this.xvelocity/Math.abs(this.xvelocity))*this.maxspeed
         }
@@ -147,28 +148,31 @@ class Boid {
         }
         if (Math.abs(this.yvelocity) < this.minspeed){
             this.yvelocity = (this.yvelocity/Math.abs(this.yvelocity))*this.minspeed
-        }
+        } */
 
-        //Turn away from the edges of the canvas
-        if(this.x < 100){
-            this.xvelocity += this.turnspeed}        
-        if (this.x > (canvas.width-100)){
-            this.xvelocity -= this.turnspeed}
-        if (this.y < 100){
-            this.yvelocity += this.turnspeed} 
-        if (this.y > (canvas.height-100)){
-            this.yvelocity -= this.turnspeed}
 
 
         //Fly
-        this.x = this.x + (this.xvelocity*1);
-        this.y = this.y + (this.yvelocity*1);
+        this.x = this.x + (this.xvelocity*0.1);
+        this.y = this.y + (this.yvelocity*0.1);
+
+       /* 
+        //Turn away from the edges of the canvas
+        if(this.x < 100){
+            this.x -= this.turnspeed}        
+        if (this.x > (canvas.width-100)){
+            this.x += this.turnspeed}
+        if (this.y < 100){
+            this.y -= this.turnspeed} 
+        if (this.y > (canvas.height-100)){
+            this.y += this.turnspeed}   
+            */      
         }
     }
 
 function init(){
     boids = [];
-    let numberOfBoids = 50;
+    let numberOfBoids = 150;
     let guard = 100;
     while(boids.length < numberOfBoids && boids.length < guard){
         let startx = Math.random() * (canvas.width - 100);
@@ -178,9 +182,9 @@ function init(){
             y: starty,
             length: 20,
             radius: 5,          
-            minspeed: 0.1,
-            maxspeed: 5,
-            turnspeed: 500,
+            minspeed: 0.001,
+            maxspeed: 0.1,
+            turnspeed: 10,
             v1x: 0,
             v1y: 0, 
             v2x: 0,
