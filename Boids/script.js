@@ -5,12 +5,11 @@ canvas.height = window.innerHeight;
 let boids = [];
 
 class Boid {
-    constructor(x, y, radius, length, velocity, turnspeed, v1x, v1y, v2x, v2y, v3x, v3y, vx, vy, xvelocity, yvelocity){
+    constructor(x, y, minspeed, maxspeed, turnspeed, v1x, v1y, v2x, v2y, v3x, v3y, vx, vy){
         this.x = x;
         this.y = y;
-        this.radius = radius;
-        this.length = length;
-        this.velocity = velocity;
+        this.minspeed = minspeed;
+        this.maxspeed = maxspeed;
         this.turnspeed = turnspeed;
         this.v1x = v1x;
         this.v1y = v1y;
@@ -20,11 +19,10 @@ class Boid {
         this.v3y = v3y;
         this.vx = vx;
         this.vy = vy;
-        this.xvelocity = xvelocity;
-        this.yvelocity = yvelocity
     }
 
-    draw(){        
+    draw(){     
+        /*   
         //draw v1
         ctx.beginPath();
         ctx.lineWidth = 2;
@@ -57,13 +55,13 @@ class Boid {
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'magenta';
         ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x + this.xvelocity, this.y + this.yvelocity);  
+        ctx.lineTo(this.x + this.xv, this.y + this.yv);  
         ctx.stroke();
         ctx.closePath();
-
+        */
         //draw head
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        ctx.arc(this.x, this.y, 5, 0, Math.PI * 2, true);
         ctx.fillStyle = 'red';
         ctx.fill();
         ctx.closePath();
@@ -78,7 +76,7 @@ class Boid {
             let a = boids[i].x - this.x
             let b = boids[i].y - this.y
             let distance = Math.sqrt(a*a + b*b)
-            if (distance < 200 && distance != 0){
+            if (distance < 100 && distance != 0){
                 centerx += boids[i].x;
                 centery += boids[i].y;
                 neighboids += 1;
@@ -105,6 +103,7 @@ class Boid {
                 this.v2y -= boids[i].y - this.y
             }          
         }
+        console.log(this.v2x);
 
         //Calculate v3 (alignment)
         let avvx = 0;
@@ -114,10 +113,10 @@ class Boid {
             let a = boids[i].x - this.x;
             let b = boids[i].y - this.y;
             let distance = Math.sqrt(a*a + b*b)
-            if (distance < 200 && distance != 0){
+            if (distance < 100 && distance != 0){
                 console.log('close boid!');
-                avvx += boids[i].xvelocity;
-                avvy += boids[i].yvelocity;
+                avvx += boids[i].vx;
+                avvy += boids[i].vy;
                 closeboids += 1;
             }
         }
@@ -129,44 +128,41 @@ class Boid {
 
         //this.vx = ((this.v1x*0.01) + (this.v2x*0.01) + (this.v3x*2))/3;
         //this.vy = ((this.v1y*0.01) + (this.v2y*0.01) + (this.v3y*2))/3; 
-        this.vx = ((this.v1x*1) + (this.v2x*1) + (this.v3x*1))/3;
-        this.vy = ((this.v1y*1) + (this.v2y*1) + (this.v3y*1))/3; 
+        this.vx += (((this.v1x*1) + (this.v2x*1) + (this.v3x*1))/3)*0.01;
+        this.vy += (((this.v1y*1) + (this.v2y*1) + (this.v3y*1))/3)*0.01; 
 
+        
+        //Turn away from the edges of the canvas
+        if(this.x < 100){
+            //this.vx -= this.turnspeed}
+            this.vx += this.turnspeed}          
+        if (this.x > (canvas.width-100)){
+            this.vx -= this.turnspeed}
+        if (this.y < 100){
+            this.vy += this.turnspeed} 
+        if (this.y > (canvas.height-100)){
+            this.vy -= this.turnspeed} 
+        
 
-        this.xvelocity = this.xvelocity + (this.vx*0.01);
-        this.yvelocity = this.yvelocity + (this.vy*0.01);
-
-        /*//Speed
-        if (Math.abs(this.xvelocity) > this.maxspeed){
-            this.xvelocity = (this.xvelocity/Math.abs(this.xvelocity))*this.maxspeed
+        //Speed
+        if (Math.abs(this.vx) > this.maxspeed){
+            this.vx = (this.vx/Math.abs(this.vx))*this.maxspeed
         }
-        if (Math.abs(this.yvelocity) > this.maxspeed){
-            this.yvelocity = (this.yvelocity/Math.abs(this.yvelocity))*this.maxspeed
+        if (Math.abs(this.vy) > this.maxspeed){
+            this.vy = (this.vy/Math.abs(this.vy))*this.maxspeed
         }
-        if (Math.abs(this.xvelocity) < this.minspeed){
-            this.xvelocity = (this.xvelocity/Math.abs(this.xvelocity))*this.minspeed
+        if (Math.abs(this.vx) < this.minspeed){
+            this.vx = (this.vx/Math.abs(this.vx))*this.minspeed
         }
-        if (Math.abs(this.yvelocity) < this.minspeed){
-            this.yvelocity = (this.yvelocity/Math.abs(this.yvelocity))*this.minspeed
-        } */
-
+        if (Math.abs(this.vy) < this.minspeed){
+            this.vy = (this.vy/Math.abs(this.vy))*this.minspeed
+        } 
 
 
         //Fly
-        this.x = this.x + (this.xvelocity*0.1);
-        this.y = this.y + (this.yvelocity*0.1);
+        this.x = this.x + (this.vx*0.1);
+        this.y = this.y + (this.vy*0.1);
 
-       /* 
-        //Turn away from the edges of the canvas
-        if(this.x < 100){
-            this.x -= this.turnspeed}        
-        if (this.x > (canvas.width-100)){
-            this.x += this.turnspeed}
-        if (this.y < 100){
-            this.y -= this.turnspeed} 
-        if (this.y > (canvas.height-100)){
-            this.y += this.turnspeed}   
-            */      
         }
     }
 
@@ -179,12 +175,10 @@ function init(){
         let starty = Math.random() * (canvas.height - 100);
         let boid = {
             x: startx,
-            y: starty,
-            length: 20,
-            radius: 5,          
-            minspeed: 0.001,
-            maxspeed: 0.1,
-            turnspeed: 10,
+            y: starty,       
+            minspeed: 0.1,
+            maxspeed: 10,
+            turnspeed: 0.1,
             v1x: 0,
             v1y: 0, 
             v2x: 0,
@@ -193,12 +187,9 @@ function init(){
             v3y: 0,
             vx: 0,
             vy: 0,
-            xvelocity: 0,
-            yvelocity: 0
         };
-        boids.push(new Boid(boid.x, boid.y, boid.radius, boid.angle, boid.length, boid.minspeed, boid.maxspeed, 
-            boid.turnspeed, boid.v1x, boid.v1y, boid.v2x, boid.v2y, boid.v3x, boid.v3y, boid.vx, boid.vy, 
-            boid.xvelocity, boid.yvelocity));
+        boids.push(new Boid(boid.x, boid.y, boid.minspeed, boid.maxspeed, 
+            boid.turnspeed, boid.v1x, boid.v1y, boid.v2x, boid.v2y, boid.v3x, boid.v3y, boid.vx, boid.vy));
     }
 }
 
